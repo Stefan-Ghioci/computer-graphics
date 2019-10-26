@@ -35,7 +35,7 @@ float get_viewport_y_coordinate(const float real_y)
 
 float graph_function(const float x)
 {
-	return pow(-1,x>=0) * sin(exp(sin(x)));
+	return  sin(exp(sin(x)));
 }
 
 
