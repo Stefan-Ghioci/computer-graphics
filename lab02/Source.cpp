@@ -1,7 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <fstream>
 
-auto viewport_width = 1024;
+auto viewport_width = 768;
 auto viewport_height = 768;
 
 const auto file_input = "cube.txt";
@@ -10,8 +10,8 @@ float min_real_x = -5;
 float max_real_x = 5;
 float real_width = abs(min_real_x) + abs(max_real_x);
 
-float min_real_y = -3.75;
-float max_real_y = 3.75;
+float min_real_y = -5;
+float max_real_y = 5;
 float real_height = abs(min_real_y) + abs(max_real_y);
 
 
@@ -82,7 +82,10 @@ int main()
 		edges.push_back(edge{vertex_index_1 - 1, vertex_index_2 - 1, z_index - 1});
 	}
 
-	std::sort(edges.begin(), edges.end(), [](const edge& edge1, const edge& edge2) { return edge1.z_index > edge2.z_index; });
+	std::sort(edges.begin(), edges.end(), [](const edge& edge1, const edge& edge2)
+	{
+		return edge1.z_index > edge2.z_index;
+	});
 
 	int tp;
 	float radius, alpha;
@@ -111,26 +114,40 @@ int main()
 
 		sf::Vertex x_axis[] =
 		{
-			sf::Vertex(sf::Vector2f(get_viewport_x_coordinate(min_real_x), get_viewport_y_coordinate(0)), color),
+			sf::Vertex(sf::Vector2f(get_viewport_x_coordinate(0), get_viewport_y_coordinate(0)), color),
 			sf::Vertex(sf::Vector2f(get_viewport_x_coordinate(max_real_x), get_viewport_y_coordinate(0)), color)
 		};
 
 		sf::Vertex y_axis[] =
 		{
-			sf::Vertex(sf::Vector2f(get_viewport_x_coordinate(0), get_viewport_y_coordinate(min_real_y)), color),
+			sf::Vertex(sf::Vector2f(get_viewport_x_coordinate(0), get_viewport_y_coordinate(0)), color),
 			sf::Vertex(sf::Vector2f(get_viewport_x_coordinate(0), get_viewport_y_coordinate(max_real_y)), color)
 		};
 
 
+		auto z_axis_vertex_1 = get_vertex_projection(
+			sf::Vector3f(0, 0, 0),
+			radius, alpha);
+
+		auto z_axis_vertex_2 = get_vertex_projection(
+			sf::Vector3f(0, 0,-1000),
+			radius, alpha);
+
+		sf::Vertex z_axis[] =
+		{
+			sf::Vertex(sf::Vector2f(get_viewport_x_coordinate(z_axis_vertex_1.x), get_viewport_y_coordinate(z_axis_vertex_1.y)), color),
+			sf::Vertex(sf::Vector2f(get_viewport_x_coordinate(z_axis_vertex_2.x), get_viewport_y_coordinate(z_axis_vertex_2.y)), color)
+		};
+
 		window.draw(x_axis, 2, sf::Lines);
 		window.draw(y_axis, 2, sf::Lines);
+		window.draw(z_axis, 2, sf::Lines);
 
-
-		sf::Color colors[] = 
+		sf::Color colors[] =
 		{
-			sf::Color(0,255,0,255),
-			sf::Color(0,204,0,255),
-			sf::Color(0,153,0,255)
+			sf::Color(0, 255, 0, 255),
+			sf::Color(0, 204, 0, 255),
+			sf::Color(0, 153, 0, 255)
 		};
 
 		for (auto edge : edges)
@@ -141,8 +158,10 @@ int main()
 
 			sf::Vertex line[] =
 			{
-				sf::Vertex(sf::Vector2f(get_viewport_x_coordinate(vertex_1.x), get_viewport_y_coordinate(vertex_1.y)), colors[z_index]),
-				sf::Vertex(sf::Vector2f(get_viewport_x_coordinate(vertex_2.x), get_viewport_y_coordinate(vertex_2.y)), colors[z_index])
+				sf::Vertex(sf::Vector2f(get_viewport_x_coordinate(vertex_1.x), get_viewport_y_coordinate(vertex_1.y)),
+				           colors[z_index]),
+				sf::Vertex(sf::Vector2f(get_viewport_x_coordinate(vertex_2.x), get_viewport_y_coordinate(vertex_2.y)),
+				           colors[z_index])
 			};
 
 			window.draw(line, 2, sf::Lines);
