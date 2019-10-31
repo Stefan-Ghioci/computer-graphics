@@ -23,5 +23,8 @@
     <Text Include="cube.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="pyramid.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>
