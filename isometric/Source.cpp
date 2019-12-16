@@ -1,11 +1,14 @@
 #include <SFML/Graphics.hpp>
 
-auto darkBrown = sf::Color{50, 25, 0};
+auto brown = sf::Color{50, 25, 0};
 auto green = sf::Color{0, 255, 0};
+auto darkGreen = sf::Color{0, 127, 0};
 auto yellow = sf::Color{255, 255, 0};
 auto white = sf::Color{255, 255, 255};
 auto red = sf::Color{255, 0, 0};
 auto black = sf::Color{0, 0, 0};
+auto blue = sf::Color{0, 0, 255};
+auto darkGrey = sf::Color{ 63, 63, 63 };
 
 auto viewportWidth = 640;
 auto viewportHeight = 640;
@@ -47,6 +50,8 @@ float GetProjectedY(const float pointX, const float pointY, const float pointZ)
 	return (pointX + ratio * pointY + pointZ) / constant2;
 }
 
+bool gridOn = false;
+
 void DrawSurface(sf::RenderWindow& window,
                  const float point1X,
                  const float point1Y,
@@ -84,10 +89,12 @@ void DrawSurface(sf::RenderWindow& window,
 
 	convex.setFillColor(color);
 
-	// auto outlineColor = sf::Color{uint8_t(color.r / 2), uint8_t(color.g / 2), uint8_t(color.b / 2)};
-	// convex.setOutlineColor(outlineColor);
-	// convex.setOutlineThickness(1);
-
+	if (gridOn)
+	{
+		auto outlineColor = sf::Color{uint8_t(color.r / 2), uint8_t(color.g / 2), uint8_t(color.b / 2)};
+		convex.setOutlineColor(outlineColor);
+		convex.setOutlineThickness(1);
+	}
 	window.draw(convex);
 }
 
@@ -152,9 +159,10 @@ void DrawDiagonalDownLeftTile(sf::RenderWindow& window,
 
 void DrawGrass(sf::RenderWindow& window)
 {
-	for (auto x = -6; x <= 5; x++) // NOLINT(cert-flp30-c)
-		for (auto z = -6; z <= 5; z++) // NOLINT(cert-flp30-c)
-			DrawHorTile(window, x, 0, z, green);
+	for (auto x = -10; x <= 10; x++)
+		for (auto z = -10; z <= 10; z++)
+			if (abs(x) * abs(x) + abs(z) * abs(z) < 9 * 9)
+				DrawHorTile(window, x, 0, z, green);
 }
 
 void DrawHouse(sf::RenderWindow& window)
@@ -187,7 +195,73 @@ void DrawHouse(sf::RenderWindow& window)
 		DrawDiagonalUpLeftTile(window, x, 6, -1, red);
 	}
 
-	// todo: cover attic front wall 
+	// attic front wall
+	DrawSurface(window,
+	            -3, 4, 3,
+	            -3, 4, -3,
+	            -3, 7, 0,
+	            -3, 4, 3,
+	            yellow);
+
+	// windows
+	DrawVertLeftTile(window, -3, 2, -2, blue);
+	DrawVertLeftTile(window, -3, 1, -2, blue);
+
+	DrawVertLeftTile(window, -3, 2, 0, blue);
+	DrawVertLeftTile(window, -3, 1, 0, blue);
+
+	DrawVertLeftTile(window, -3, 2, 1, blue);
+	DrawVertLeftTile(window, -3, 1, 1, blue);
+
+	DrawVertRightTile(window, 0, 2, -3, blue);
+	DrawVertRightTile(window, 0, 1, -3, blue);
+	DrawVertRightTile(window, 1, 2, -3, blue);
+	DrawVertRightTile(window, 1, 1, -3, blue);
+
+	// door
+	DrawVertRightTile(window, -2, 2, -3, brown);
+	DrawVertRightTile(window, -2, 1, -3, brown);
+	DrawVertRightTile(window, -2, 0, -3, brown);
+
+	// lane
+
+	DrawHorTile(window, -2, 0, -4, darkGrey);
+	DrawHorTile(window, -2, 0, -5, darkGrey);
+	DrawHorTile(window, -2, 0, -6, darkGrey);
+	DrawHorTile(window, -1, 0, -6, darkGrey);
+	DrawHorTile(window, -1, 0, -7, darkGrey);
+	DrawHorTile(window, -1, 0, -8, darkGrey);
+
+}
+
+void DrawTree(sf::RenderWindow& window, const float x, const float z)
+{
+	// trunk
+	DrawVertLeftTile(window, x, 0, z, brown);
+	DrawVertLeftTile(window, x, 1, z, brown);
+	DrawVertLeftTile(window, x, 2, z, brown);
+
+	DrawVertRightTile(window, x, 0, z, brown);
+	DrawVertRightTile(window, x, 1, z, brown);
+	DrawVertRightTile(window, x, 2, z, brown);
+
+
+	// leaves
+	for (auto i = -1; i <= 1; i++)
+	{
+		DrawVertLeftTile(window, x - 1, 3, z + i, darkGreen);
+		DrawVertLeftTile(window, x - 1, 4, z + i, darkGreen);
+
+		DrawVertRightTile(window, x + i, 3, z - 1, darkGreen);
+		DrawVertRightTile(window, x + i, 4, z - 1, darkGreen);
+	}
+	for (auto i = -1; i <= 1; i++)
+		for (auto j = -1; j <= 1; j++)
+			DrawHorTile(window, x + i, 5, z + j, darkGreen);
+
+	DrawVertLeftTile(window, x, 5, z, darkGreen);
+	DrawVertRightTile(window, x, 5, z, darkGreen);
+	DrawHorTile(window, x, 6, z, darkGreen);
 }
 
 int main()
@@ -224,13 +298,27 @@ int main()
 				{
 					scale *= 1.1;
 				}
+				else if (event.mouseButton.button == sf::Mouse::Middle)
+				{
+					gridOn = true;
+				}
+			}
+			else if (event.type == sf::Event::MouseButtonReleased)
+			{
+				if(event.mouseButton.button == sf::Mouse::Middle)
+				{
+					gridOn = false;
+				}
 			}
 		}
 
 		window.clear();
 
 		DrawGrass(window);
+		DrawTree(window, 5, -3);
+		DrawTree(window, -2, 8);
 		DrawHouse(window);
+		DrawTree(window, -7, 0);
 
 		window.display();
 	}
