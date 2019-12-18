@@ -1,14 +1,14 @@
 #include <SFML/Graphics.hpp>
 
-auto brown = sf::Color{50, 25, 0};
-auto green = sf::Color{0, 255, 0};
-auto darkGreen = sf::Color{0, 127, 0};
-auto yellow = sf::Color{255, 255, 0};
+auto brown = sf::Color{50, 25, 1};
+auto green = sf::Color{1, 191, 1};
+auto darkGreen = sf::Color{1, 127, 1};
+auto yellow = sf::Color{255, 255, 1};
 auto white = sf::Color{255, 255, 255};
-auto red = sf::Color{255, 0, 0};
-auto black = sf::Color{0, 0, 0};
-auto blue = sf::Color{0, 0, 255};
-auto darkGrey = sf::Color{ 63, 63, 63 };
+auto red = sf::Color{255, 1, 1};
+auto black = sf::Color{1, 1, 1};
+auto blue = sf::Color{1, 1, 255};
+auto darkGrey = sf::Color{63, 63, 63};
 
 auto viewportWidth = 640;
 auto viewportHeight = 640;
@@ -18,6 +18,9 @@ float scale = 10;
 auto constant1 = sqrt(2);
 auto constant2 = sqrt(6);
 auto ratio = 2.0f;
+auto lightCoefficient = 1.1;
+
+bool gridOn = false;
 
 
 float GetRealXCoordinate(const float x)
@@ -50,7 +53,16 @@ float GetProjectedY(const float pointX, const float pointY, const float pointZ)
 	return (pointX + ratio * pointY + pointZ) / constant2;
 }
 
-bool gridOn = false;
+
+sf::Color DarkenColor(const sf::Color color, const float intensity)
+{
+	return sf::Color{
+		uint8_t(std::min(color.r / pow(lightCoefficient, intensity), 255.0)),
+		uint8_t(std::min(color.g / pow(lightCoefficient, intensity), 255.0)),
+		uint8_t(std::min(color.b / pow(lightCoefficient, intensity), 255.0))
+	};
+}
+
 
 void DrawSurface(sf::RenderWindow& window,
                  const float point1X,
@@ -106,7 +118,7 @@ void DrawHorTile(sf::RenderWindow& window, const float x, const float y, const f
 	            x + 1, y, z,
 	            x + 1, y, z + 1,
 	            x, y, z + 1,
-	            color);
+	            DarkenColor(color, 1));
 }
 
 void DrawVertRightTile(sf::RenderWindow& window, const float x, const float y, const float z, const sf::Color color)
@@ -116,7 +128,7 @@ void DrawVertRightTile(sf::RenderWindow& window, const float x, const float y, c
 	            x, y + 1, z,
 	            x + 1, y + 1, z,
 	            x + 1, y, z,
-	            color);
+	            DarkenColor(color, 2));
 }
 
 void DrawVertLeftTile(sf::RenderWindow& window, const float x, const float y, const float z, const sf::Color color)
@@ -126,7 +138,7 @@ void DrawVertLeftTile(sf::RenderWindow& window, const float x, const float y, co
 	            x, y + 1, z,
 	            x, y + 1, z + 1,
 	            x, y, z + 1,
-	            color);
+	            DarkenColor(color, 3));
 }
 
 void DrawDiagonalUpLeftTile(sf::RenderWindow& window,
@@ -140,7 +152,7 @@ void DrawDiagonalUpLeftTile(sf::RenderWindow& window,
 	            x, y + 1, z + 1,
 	            x + 1, y + 1, z + 1,
 	            x + 1, y, z,
-	            color);
+	            DarkenColor(color, 1.5));
 }
 
 void DrawDiagonalDownLeftTile(sf::RenderWindow& window,
@@ -154,7 +166,148 @@ void DrawDiagonalDownLeftTile(sf::RenderWindow& window,
 	            x + 1, y + 1, z,
 	            x + 1, y, z + 1,
 	            x, y, z + 1,
-	            color);
+	            DarkenColor(color, 3));
+}
+
+void DrawDiagonalUpRightTile(sf::RenderWindow& window,
+                             const float x,
+                             const float y,
+                             const float z,
+                             const sf::Color color)
+{
+	DrawSurface(window,
+	            x, y, z,
+	            x + 1, y + 1, z,
+	            x + 1, y + 1, z + 1,
+	            x, y, z + 1,
+	            DarkenColor(color, 3));
+}
+
+void DrawDiagonalUpRightBottomLeftHalfTile(sf::RenderWindow& window,
+                                           const float x,
+                                           const float y,
+                                           const float z,
+                                           const sf::Color color)
+{
+	DrawSurface(window,
+	            x, y, z,
+	            x + 1, y + 1, z + 1,
+	            x, y, z + 1,
+	            x, y, z,
+	            DarkenColor(color, 3));
+}
+
+void DrawDiagonalUpRightBottomRightHalfTile(sf::RenderWindow& window,
+                                            const float x,
+                                            const float y,
+                                            const float z,
+                                            const sf::Color color)
+{
+	DrawSurface(window,
+	            x, y, z,
+	            x + 1, y + 1, z,
+	            x, y, z + 1,
+	            x, y, z,
+	            DarkenColor(color, 3));
+}
+
+void DrawDiagonalDownRightTile(sf::RenderWindow& window,
+                               const float x,
+                               const float y,
+                               const float z,
+                               const sf::Color color)
+{
+	DrawSurface(window,
+	            x, y + 1, z,
+	            x + 1, y, z,
+	            x + 1, y, z + 1,
+	            x, y + 1, z + 1,
+	            DarkenColor(color, 1));
+}
+
+void DrawDiagonalDownRightBottomLeftHalfTile(sf::RenderWindow& window,
+                                             const float x,
+                                             const float y,
+                                             const float z,
+                                             const sf::Color color)
+{
+	DrawSurface(window,
+	            x + 1, y, z,
+	            x + 1, y, z + 1,
+	            x, y + 1, z + 1,
+	            x + 1, y, z,
+	            DarkenColor(color, 1));
+}
+
+void DrawDiagonalDownRightBottomRightHalfTile(sf::RenderWindow& window,
+                                              const float x,
+                                              const float y,
+                                              const float z,
+                                              const sf::Color color)
+{
+	DrawSurface(window,
+	            x, y + 1, z,
+	            x + 1, y, z,
+	            x + 1, y, z + 1,
+	            x, y + 1, z,
+	            DarkenColor(color, 1));
+}
+
+void DrawDiagonalUpLeftBottomRightHalfTile(sf::RenderWindow& window,
+                                           const float x,
+                                           const float y,
+                                           const float z,
+                                           const sf::Color color)
+{
+	DrawSurface(window,
+	            x, y, z,
+	            x + 1, y, z,
+	            x + 1, y + 1, z + 1,
+	            x, y, z,
+	            DarkenColor(color, 1.5));
+}
+
+void DrawDiagonalUpLeftBottomLeftHalfTile(sf::RenderWindow& window,
+                                          const float x,
+                                          const float y,
+                                          const float z,
+                                          const sf::Color color)
+{
+	DrawSurface(window,
+	            x, y, z,
+	            x + 1, y, z,
+	            x, y + 1, z + 1,
+	            x, y, z,
+	            DarkenColor(color, 1.5));
+}
+
+
+void DrawDiagonalDownLeftBottomLeftHalfTile(sf::RenderWindow& window,
+                                            const float x,
+                                            const float y,
+                                            const float z,
+                                            const sf::Color color)
+{
+	DrawSurface(window,
+	            x, y + 1, z,
+	            x + 1, y, z + 1,
+	            x, y, z + 1,
+	            x, y + 1, z,
+	            DarkenColor(color, 3));
+}
+
+void DrawDiagonalDownLeftBottomRightHalfTile(sf::RenderWindow& window,
+                                             const float x,
+                                             const float y,
+                                             const float z,
+                                             const sf::Color color)
+{
+	DrawSurface(window,
+	            x + 1, y + 1, z,
+	            x + 1, y, z + 1,
+	            x, y, z + 1,
+	            x + 1, y + 1, z,
+	            DarkenColor(color, 3));
 }
 
 void DrawGrass(sf::RenderWindow& window)
@@ -201,7 +354,7 @@ void DrawHouse(sf::RenderWindow& window)
 	            -3, 4, -3,
 	            -3, 7, 0,
 	            -3, 4, 3,
-	            yellow);
+	            DarkenColor(yellow, 3));
 
 	// windows
 	DrawVertLeftTile(window, -3, 2, -2, blue);
@@ -231,7 +384,6 @@ void DrawHouse(sf::RenderWindow& window)
 	DrawHorTile(window, -1, 0, -6, darkGrey);
 	DrawHorTile(window, -1, 0, -7, darkGrey);
 	DrawHorTile(window, -1, 0, -8, darkGrey);
-
 }
 
 void DrawTree(sf::RenderWindow& window, const float x, const float z)
@@ -255,12 +407,23 @@ void DrawTree(sf::RenderWindow& window, const float x, const float z)
 		DrawVertRightTile(window, x + i, 3, z - 1, darkGreen);
 		DrawVertRightTile(window, x + i, 4, z - 1, darkGreen);
 	}
-	for (auto i = -1; i <= 1; i++)
-		for (auto j = -1; j <= 1; j++)
-			DrawHorTile(window, x + i, 5, z + j, darkGreen);
 
-	DrawVertLeftTile(window, x, 5, z, darkGreen);
-	DrawVertRightTile(window, x, 5, z, darkGreen);
+	DrawDiagonalDownLeftBottomLeftHalfTile(window, x + 1, 5, z + 1, darkGreen);
+	DrawDiagonalDownLeftTile(window, x, 5, z + 1, darkGreen);
+	DrawDiagonalDownLeftBottomRightHalfTile(window, x - 1, 5, z + 1, darkGreen);
+
+	DrawDiagonalDownRightBottomRightHalfTile(window, x + 1, 5, z + 1, darkGreen);
+	DrawDiagonalDownRightTile(window, x + 1, 5, z, darkGreen);
+	DrawDiagonalDownRightBottomLeftHalfTile(window, x + 1, 5, z - 1, darkGreen);
+
+	DrawDiagonalUpRightBottomRightHalfTile(window, x - 1, 5, z + 1, darkGreen);
+	DrawDiagonalUpRightTile(window, x - 1, 5, z, darkGreen);
+	DrawDiagonalUpRightBottomLeftHalfTile(window, x - 1, 5, z - 1, darkGreen);
+
+	DrawDiagonalUpLeftBottomRightHalfTile(window, x - 1, 5, z - 1, darkGreen);
+	DrawDiagonalUpLeftTile(window, x, 5, z - 1, darkGreen);
+	DrawDiagonalUpLeftBottomLeftHalfTile(window, x + 1, 5, z - 1, darkGreen);
+
 	DrawHorTile(window, x, 6, z, darkGreen);
 }
 
@@ -298,16 +461,20 @@ int main()
 				{
 					scale *= 1.1;
 				}
-				else if (event.mouseButton.button == sf::Mouse::Middle)
-				{
-					gridOn = true;
-				}
 			}
-			else if (event.type == sf::Event::MouseButtonReleased)
+			else if (event.type == sf::Event::KeyPressed)
 			{
-				if(event.mouseButton.button == sf::Mouse::Middle)
+				if (event.key.code == sf::Keyboard::G)
 				{
-					gridOn = false;
+					gridOn = !gridOn;
+				}
+				else if (event.key.code == sf::Keyboard::Add)
+				{
+					lightCoefficient = (lightCoefficient / 1.1) >= 1.1 ? lightCoefficient / 1.1 : 1.1;
+				}
+				else if (event.key.code == sf::Keyboard::Subtract)
+				{
+					lightCoefficient *= 1.1;
 				}
 			}
 		}
